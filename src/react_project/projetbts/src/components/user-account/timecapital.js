@@ -137,7 +137,7 @@ function UserTimeCapital() {
           color: '#555',
           marginTop: '0'
         }}>
-          Voici votre capital temps actuel : {userQuota} heure(s)
+          Voici votre capital temps actuel : {userQuota} minute(s)
         </p>
       )}
 
