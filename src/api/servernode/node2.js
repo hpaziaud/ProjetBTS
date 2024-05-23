@@ -222,6 +222,51 @@ app.put('/boxs', (req, res) => {
 
 
 
+
+// Route pour insérer les informations des boxs
+app.post('/info', (req, res) => {
+    const { greenEnergy, boxState, date } = req.body[0];
+
+    console.log("Données reçues du body : ", req.body);
+
+    // Convertir la chaîne boxState en tableau
+    const boxStateArray = JSON.parse(boxState);
+
+    // Construire la chaîne SQL pour insérer les informations des boxs
+    const insertQuery = `
+        INSERT INTO info (box1, box2, box3, box4, box5, box6, box7, box8, temps_vert_box, info_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `;
+
+    // Préparer les valeurs à insérer
+    const values = [
+        boxStateArray[0],
+        boxStateArray[1],
+        boxStateArray[2],
+        boxStateArray[3],
+        boxStateArray[4],
+        boxStateArray[5],
+        boxStateArray[6],
+        boxStateArray[7],
+        greenEnergy,
+        date
+    ];
+
+    // Insérer les informations des boxs
+    connection.query(insertQuery, values, (error, results) => {
+        if (error) {
+            console.error('Erreur lors de l\'insertion des informations des boxs :', error);
+            res.status(500).json({ error: 'Erreur lors de l\'insertion des informations des boxs' });
+            return;
+        }
+        console.log("Requête d'insertion des boxs réussie");
+        res.json({ message: 'Informations des boxs insérées avec succès' });
+    });
+});
+
+
+
+
 /*****************************************************************************************************************************/
 /*                                                                                                                           */
 /*****************************************************************************************************************************/
