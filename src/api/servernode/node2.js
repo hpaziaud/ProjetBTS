@@ -179,7 +179,7 @@ app.put('/utilisateurs', (req, res) => {
 });
 
 // Route pour mettre à jour toutes les informations des boxs
-app.put('/boxs', (req, res) => {
+app.post('/consumptionUpdateNotification', (req, res) => {
     const { greenEnergy, boxState } = req.body;
 
 
@@ -225,31 +225,29 @@ app.put('/boxs', (req, res) => {
 
 // Route pour insérer les informations des boxs
 app.post('/info', (req, res) => {
-    const { greenEnergy, boxState, date } = req.body[0];
+    const { greenEnergy, boxState, date } = req.body;
 
     console.log("Données reçues du body : ", req.body);
-
-    // Convertir la chaîne boxState en tableau
-    const boxStateArray = JSON.parse(boxState);
+ // Stocker la date reçue dans une variable nommée joris
+ const joris = date;
 
     // Construire la chaîne SQL pour insérer les informations des boxs
     const insertQuery = `
         INSERT INTO info (box1, box2, box3, box4, box5, box6, box7, box8, temps_vert_box, info_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW());
     `;
 
     // Préparer les valeurs à insérer
     const values = [
-        boxStateArray[0],
-        boxStateArray[1],
-        boxStateArray[2],
-        boxStateArray[3],
-        boxStateArray[4],
-        boxStateArray[5],
-        boxStateArray[6],
-        boxStateArray[7],
+        boxState[0],
+        boxState[1],
+        boxState[2],
+        boxState[3],
+        boxState[4],
+        boxState[5],
+        boxState[6],
+        boxState[7],
         greenEnergy,
-        date
     ];
 
     // Insérer les informations des boxs
@@ -263,6 +261,8 @@ app.post('/info', (req, res) => {
         res.json({ message: 'Informations des boxs insérées avec succès' });
     });
 });
+
+//SELECT SUM(CASE WHEN temps_vert_box = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_energie_vert FROM info WHERE box1 = 1 AND info_date BETWEEN NOW() - INTERVAL 1 DAY AND NOW();
 
 
 

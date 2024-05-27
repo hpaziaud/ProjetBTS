@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 5001;
 
+var isGreenEnergy = false;
+// Variable pour stocker le temps de la dernière mise à jour
+let dernier_MAJ;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -13,7 +16,7 @@ const connection = mysql.createConnection({
     host: '192.168.65.105',
     user: 'debian',
     password: 'root',
-    database: 'sandbox_projet_bts'
+    database: 'sandbox3_projet_bts'
 });
 
 // Connecter à la base de données
@@ -179,10 +182,11 @@ app.put('/utilisateurs', (req, res) => {
 });
 
 // Route pour mettre à jour toutes les informations des boxs
-app.put('/boxs', (req, res) => {
+app.post('/consumptionUpdateNotification', (req, res) => {
     const { greenEnergy, boxState } = req.body;
 
-
+    isGreenEnergy = greenEnergy;
+    dernier_MAJ = new Date();
     console.log("Données reçues du body : ", req.body);
 
 
@@ -198,8 +202,7 @@ app.put('/boxs', (req, res) => {
                                 WHEN id_box = 6 THEN ${boxState[5]}
                                 WHEN id_box = 7 THEN ${boxState[6]}
                                 WHEN id_box = 8 THEN ${boxState[7]}
-                            END,
-            temps_vert_box = ${greenEnergy}
+                            END
         WHERE id_box IN (1, 2, 3, 4, 5, 6, 7, 8);
     `;
 
