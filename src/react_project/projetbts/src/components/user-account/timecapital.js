@@ -104,7 +104,7 @@ function UserTimeCapital() {
                 </a>
                 <ul className="dropdown" id="my-dropdown-id">
                   <li><a href="/time-capital">Mon capital temps</a></li>
-                  <li><a href="">Ma consommation</a></li>
+                  <li><a href="/consumption">Ma consommation</a></li>
                   <li className="separator"></li>
                   <li><a href="">Mon compte</a></li>
                   <li className="separator"></li>
