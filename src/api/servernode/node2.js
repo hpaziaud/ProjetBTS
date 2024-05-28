@@ -178,11 +178,11 @@ app.delete('/utilisateurs', (req, res) => {
     });
 });
 
-// Route pour mettre à jour toutes les informations d'un utilisateur en fonction de l'id_utilisateur
+// Route pour mettre à jour toutes les informations d'un utilisateur en fonction du prénom et du nom
 app.put('/utilisateurs', (req, res) => {
-    const { id_utilisateur, ...otherInfo } = req.body;
+    const { prenom_utilisateur, nom_utilisateur, ...otherInfo } = req.body;
 
-    // Construire la chaîne SQL pour mettre à jour les informations autres que l'id_utilisateur
+    // Construire la chaîne SQL pour mettre à jour les informations autres que le prénom et le nom de l'utilisateur
     let updateQuery = '';
     const updateParams = [];
 
@@ -193,9 +193,9 @@ app.put('/utilisateurs', (req, res) => {
     updateQuery = updateQuery.slice(0, -2); // Supprimer la virgule finale
 
     // Mettre à jour les informations de l'utilisateur
-    const query = `UPDATE utilisateur SET ${updateQuery} WHERE id_utilisateur = ?`;
+    const query = `UPDATE utilisateur SET ${updateQuery} WHERE prenom_utilisateur = ? AND nom_utilisateur = ?`;
 
-    connection.query(query, [...updateParams, id_utilisateur], (error, results) => {
+    connection.query(query, [...updateParams, prenom_utilisateur, nom_utilisateur], (error, results) => {
         if (error) {
             console.error('Erreur lors de la mise à jour des informations de l\'utilisateur :', error);
             res.status(500).json({ error: 'Erreur lors de la mise à jour des informations de l\'utilisateur' });
@@ -209,6 +209,8 @@ app.put('/utilisateurs', (req, res) => {
         res.json({ message: 'Informations de l\'utilisateur mises à jour avec succès' });
     });
 });
+
+
 
 
 
