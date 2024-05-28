@@ -4,7 +4,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 5001;
-
+// Route pour insérer un utilisateur dans la base de données
+app.use(express.json());
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -37,19 +38,47 @@ app.use((error, req, res, next) => {
     }
 });
 
-
-// Route pour récupérer tous les éléments de la base de données
+//recupere tout les information de utilisateur et occupation dun utilisateur avec laide de id utilisateur
 app.get('/utilisateurs', (req, res) => {
-    connection.query('SELECT utilisateur.*, occupation.*, box.*, occupation.heure_depot_occupation AS heure_depot, occupation.heure_retrait_occupation AS heure_retrait FROM utilisateur JOIN occupation ON utilisateur.id_utilisateur = occupation.id_utilisateur_occupation JOIN box ON occupation.id_box_occupation = box.id_box', (error, results) => {
+    const query = `
+        SELECT 
+            u.id_utilisateur, 
+            u.isadmin_utilisateur, 
+            u.nom_utilisateur, 
+            u.prenom_utilisateur, 
+            u.classe_utilisateur, 
+            u.badge_utilisateur, 
+            u.photo_utilisateur, 
+            u.password_utilisateur, 
+            u.telephone_utilisateur, 
+            u.mail_utilisateur, 
+            u.infos_utilisateur, 
+            u.quota_utilisateur, 
+            o.id_occupation, 
+            o.id_utilisateur_occupation, 
+            o.numerobox_occupation, 
+            o.heure_depot_occupation AS heure_depot, 
+            o.heure_retrait_occupation AS heure_retrait 
+        FROM utilisateur u
+        JOIN occupation o ON u.id_utilisateur = o.id_utilisateur_occupation
+    `;
+
+    // Affichage de la requête reçue
+    console.log('Requête reçue pour récupérer tous les utilisateurs et leurs occupations');
+
+    connection.query(query, (error, results) => {
         if (error) {
             console.error('Erreur lors de la récupération des éléments :', error);
             res.status(500).json({ error: 'Erreur lors de la récupération des éléments' });
             return;
         }
+
+        // Affichage des informations de réponse
+        console.log('Résultats de la requête :', results);
+
         res.json(results);
     });
 });
-
 
 // Route pour récupérer les éléments de la base de données avec le badge
 app.get('/utilisateurs/badge_utilisateur', (req, res) => {
@@ -109,8 +138,7 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot/:uid', (req, res) => {
 });
 
 
-// Route pour insérer un utilisateur dans la base de données
-app.use(express.json());
+
 
 app.post('/utilisateurs', (req, res) => {
     console.log(req.body);
@@ -127,30 +155,34 @@ app.post('/utilisateurs', (req, res) => {
 });
 
 
-// Route pour supprimer un utilisateur de la base de données en utilisant le nom et le prénom
+// Route pour supprimer un utilisateur de la base de données en utilisant l'id_utilisateur
 app.delete('/utilisateurs', (req, res) => {
     const { id_utilisateur } = req.body;
     console.log(req.body);
+
+    // Supprimer l'utilisateur
     connection.query('DELETE FROM utilisateur WHERE id_utilisateur = ?', [id_utilisateur], (error, results) => {
         if (error) {
             console.error('Erreur lors de la suppression de l\'utilisateur :', error);
             res.status(500).json({ error: 'Erreur lors de la suppression de l\'utilisateur' });
             return;
         }
+
         if (results.affectedRows === 0) {
             res.status(404).json({ message: 'Utilisateur non trouvé' });
             return;
         }
-        console.log("requete delete ok");
+        
+        console.log("Requête DELETE réussie");
         res.json({ message: 'Utilisateur supprimé avec succès' });
     });
 });
 
-// Route pour mettre à jour toutes les informations d'un utilisateur en fonction du nom et du prénom
+// Route pour mettre à jour toutes les informations d'un utilisateur en fonction de l'id_utilisateur
 app.put('/utilisateurs', (req, res) => {
-    const { nom_utilisateur, prenom_utilisateur, ...otherInfo } = req.body;
+    const { id_utilisateur, ...otherInfo } = req.body;
 
-    // Construire la chaîne SQL pour mettre à jour les informations autres que le nom et le prénom
+    // Construire la chaîne SQL pour mettre à jour les informations autres que l'id_utilisateur
     let updateQuery = '';
     const updateParams = [];
 
@@ -161,19 +193,19 @@ app.put('/utilisateurs', (req, res) => {
     updateQuery = updateQuery.slice(0, -2); // Supprimer la virgule finale
 
     // Mettre à jour les informations de l'utilisateur
-    const query = `UPDATE utilisateur SET ${updateQuery} WHERE nom_utilisateur = ? AND prenom_utilisateur = ?`;
+    const query = `UPDATE utilisateur SET ${updateQuery} WHERE id_utilisateur = ?`;
 
-    connection.query(query, [...updateParams, nom_utilisateur, prenom_utilisateur], (error, results) => {
+    connection.query(query, [...updateParams, id_utilisateur], (error, results) => {
         if (error) {
             console.error('Erreur lors de la mise à jour des informations de l\'utilisateur :', error);
             res.status(500).json({ error: 'Erreur lors de la mise à jour des informations de l\'utilisateur' });
             return;
         }
         if (results.affectedRows === 0) {
-            res.status(404).json({ message: 'Utilisateur non trouvé gyitfiytf' });
+            res.status(404).json({ message: 'Utilisateur non trouvé' });
             return;
         }
-        console.log("requete update ok");
+        console.log("Requête UPDATE réussie");
         res.json({ message: 'Informations de l\'utilisateur mises à jour avec succès' });
     });
 });
@@ -222,6 +254,73 @@ app.post('/info', (req, res) => {
 });
 
 //SELECT SUM(CASE WHEN temps_vert_box = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_energie_vert FROM info WHERE box1 = 1 AND info_date BETWEEN NOW() - INTERVAL 1 DAY AND NOW();
+
+
+
+
+
+
+
+// Route pour insérer un utilisateur dans la base de données
+app.use(express.json());
+// Route pour obtenir les pourcentages de temps
+app.get('/utilisateur/pourcentage', (req, res) => {
+    const id_utilisateur = req.query.id_utilisateur;
+    const intervalle = req.query.intervalle;
+
+    // Affichage des informations reçues
+    console.log(`Requête reçue avec id_utilisateur: ${id_utilisateur} et intervalle: ${intervalle}`);
+
+    const query = `
+        WITH Intervals AS (
+            SELECT 
+                i.*, 
+                o.numerobox_occupation,
+                TIMESTAMPDIFF(SECOND, LAG(i.info_date) OVER (ORDER BY i.info_date), i.info_date) AS interval_in_seconds
+            FROM 
+                info i
+            JOIN 
+                occupation o ON i.info_date BETWEEN o.heure_depot_occupation AND o.heure_retrait_occupation
+            WHERE 
+                o.id_utilisateur_occupation = ?
+                AND o.heure_depot_occupation BETWEEN CURDATE() - INTERVAL ? DAY AND CURDATE()
+                AND o.heure_retrait_occupation BETWEEN CURDATE() - INTERVAL ? DAY AND CURDATE()
+                AND (
+                    (o.numerobox_occupation = 1 AND i.box1 = 1) OR
+                    (o.numerobox_occupation = 2 AND i.box2 = 1) OR
+                    (o.numerobox_occupation = 3 AND i.box3 = 1) OR
+                    (o.numerobox_occupation = 4 AND i.box4 = 1) OR
+                    (o.numerobox_occupation = 5 AND i.box5 = 1) OR
+                    (o.numerobox_occupation = 6 AND i.box6 = 1) OR
+                    (o.numerobox_occupation = 7 AND i.box7 = 1) OR
+                    (o.numerobox_occupation = 8 AND i.box8 = 1)
+                )
+        )
+        SELECT 
+            SUM(CASE WHEN temps_vert_box = 1 THEN interval_in_seconds ELSE 0 END) AS sum_temps_vert,
+            SUM(CASE WHEN temps_vert_box = 0 THEN interval_in_seconds ELSE 0 END) AS sum_temps_non_vert,
+            (SUM(CASE WHEN temps_vert_box = 1 THEN interval_in_seconds ELSE 0 END) /
+            (SUM(CASE WHEN temps_vert_box = 0 THEN interval_in_seconds ELSE 0 END) + SUM(CASE WHEN temps_vert_box = 1 THEN interval_in_seconds ELSE 0 END)) * 100) AS pourcentage_temps_vert,
+            (SUM(CASE WHEN temps_vert_box = 0 THEN interval_in_seconds ELSE 0 END) /
+            (SUM(CASE WHEN temps_vert_box = 0 THEN interval_in_seconds ELSE 0 END) + SUM(CASE WHEN temps_vert_box = 1 THEN interval_in_seconds ELSE 0 END)) * 100) AS pourcentage_temps_non_vert
+        FROM 
+            Intervals;
+    `;
+
+    connection.query(query, [id_utilisateur, intervalle, intervalle], (error, results) => {
+        if (error) {
+            console.error('Erreur lors de l\'exécution de la requête :', error);
+            res.status(500).json({ error: 'Erreur lors de l\'exécution de la requête' });
+            return;
+        }
+
+        // Affichage des informations de réponse
+        console.log('Résultats de la requête :', results);
+
+        res.json(results);
+    });
+});
+
 
 
 
