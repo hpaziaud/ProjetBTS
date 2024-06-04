@@ -52,6 +52,8 @@ function UserMain() {
 
         checkCookie();
 
+
+
         const dropdownButtons = document.querySelectorAll('.dropdown-toggler');
         dropdownButtons.forEach((dropdownButton) => {
             dropdownButton.addEventListener('click', handleDropdownClick);
@@ -84,7 +86,7 @@ function UserMain() {
 
                     <div className="navbar2-menu" id="open-navbar1">
                         <ul className="navbar2-nav">
-                        <li className="active"><a href=""><Link to="/user-profile">Accueil</Link></a></li>
+                            <li className="active"><a href=""><Link to="/user-profile">Accueil</Link></a></li>
                             <li className="navbar2-dropdown">
                                 <a href="" className="dropdown-toggler" data-dropdown="my-dropdown-id">
                                     Catégories <i className="fa fa-angle-down"></i>
@@ -95,7 +97,7 @@ function UserMain() {
                                     <li className="separator"></li>
                                     <li><a href="">Mon compte</a></li>
                                     <li className="separator"></li>
-                                    <li><a href="">Paramètres</a></li> 
+                                    <li><a href="">Paramètres</a></li>
                                     <li><a href="/contact">Nous contacter</a></li>
                                 </ul>
                             </li>
@@ -110,7 +112,35 @@ function UserMain() {
                     </div>
                 </div>
             </nav>
-            {userId && <p>ID utilisateur : {userId}</p>}
+            {/* {userId && <p>ID utilisateur : {userId}</p>} */}
+
+            <section id="intro">
+                <div class="info">
+                    <h1>Bienvenue !</h1>
+                    <p>
+                    Bienvenue sur votre espace personnel ! Nous sommes ravis de vous compter parmi nos utilisateurs et de vous offrir un espace dédié pour gérer votre compte et vos préférences.
+                    </p>
+                </div>
+                <div class="split-beer">
+                    <img
+                        class="beer"
+                        src="https://cdn.futura-sciences.com/sources/images/actu/cellule-solaire-revolutionnaire.jpeg" />
+                    <img
+                        class="beer"
+                        src="https://www.lesoir.be/sites/default/files/dpistyles_v2/ls_16_9_864w/2022/03/17/node_430582/28949696/public/2022/03/17/B9730295491Z.1_20220317105244_000+GETK43DV8.1-0.jpg?itok=rlMIdPl-1647511049" />
+                    <img
+                        class="beer"
+                        src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/9efc9dd0-9036-419b-bf16-619164b94095" />
+                </div>
+            </section>
+
+            
+
+            <footer>
+                <p>
+                Notre objectif est de vous fournir une expérience utilisateur fluide et agréable, et nous espérons que vous apprécierez les fonctionnalités et les services que nous avons mis en place pour vous.
+                </p>
+            </footer>
         </div>
     );
 }

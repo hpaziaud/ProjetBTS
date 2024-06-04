@@ -97,6 +97,7 @@ app.get('/utilisateurs/badge_utilisateur', (req, res) => {
 });
 
 // Route pour récupérer le quota utilisateur et dernier heure depot utilisation avec le badge
+/*
 app.get('/utilisateurs/badge_utilisateur/quota-depot', (req, res) => {
     console.log(req.body);
     //const { badge_utilisateur } = req.body;
@@ -111,11 +112,9 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot', (req, res) => {
         res.json(results);
     });
 });
-
-
-
+*/
 // Route pour récupérer le quota utilisateur et la dernière heure de dépôt d'utilisation avec le badge
-app.get('/utilisateurs/badge_utilisateur/quota-depot/:uid', (req, res) => {
+app.get('/utilisateurs/badge_utilisateur/quota-depot-boxslibre/:uid', (req, res) => {
     const badge_utilisateur = req.params.uid;
     console.log('Badge utilisateur reçu :', badge_utilisateur);
 
@@ -137,7 +136,81 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot/:uid', (req, res) => {
     );
 });
 
+app.get('/utilisateurs/badge_utilisateur/quota-depot-freeboxs/:uid', (req, res) => {
+    const badge_utilisateur = req.params.uid;
+    console.log('Badge utilisateur reçu :', badge_utilisateur);
 
+    const userQuery = `
+        SELECT u.quota_utilisateur,
+               CASE WHEN o.id_occupation IS NULL THEN NULL ELSE o.heure_depot_occupation END AS heure_depot_occupation
+        FROM utilisateur u
+        LEFT JOIN occupation o ON u.id_utilisateur = o.id_utilisateur_occupation
+        WHERE u.badge_utilisateur = ?
+        ORDER BY o.heure_depot_occupation DESC
+        LIMIT 1;
+    `;
+
+    const boxQuery = `
+        SELECT
+            CASE WHEN box1 = 0 THEN 1 END AS box1,
+            CASE WHEN box2 = 0 THEN 2 END AS box2,
+            CASE WHEN box3 = 0 THEN 3 END AS box3,
+            CASE WHEN box4 = 0 THEN 4 END AS box4,
+            CASE WHEN box5 = 0 THEN 5 END AS box5,
+            CASE WHEN box6 = 0 THEN 6 END AS box6,
+            CASE WHEN box7 = 0 THEN 7 END AS box7,
+            CASE WHEN box8 = 0 THEN 8 END AS box8
+        FROM info
+        WHERE id_info = (SELECT MAX(id_info) FROM info);
+    `;
+
+    // Exécuter la première requête pour obtenir les informations de l'utilisateur
+    connection.query(userQuery, [badge_utilisateur], (userError, userResults) => {
+        if (userError) {
+            console.error('Erreur lors de la récupération des éléments utilisateur :', userError);
+            res.status(500).json({ error: 'Erreur lors de la récupération des éléments utilisateur' });
+            return;
+        }
+
+        if (userResults.length === 0) {
+            res.status(404).json({ error: 'Utilisateur non trouvé' });
+            return;
+        }
+
+        // Exécuter la deuxième requête pour obtenir un champ libre
+        connection.query(boxQuery, (boxError, boxResults) => {
+            if (boxError) {
+                console.error('Erreur lors de la récupération des informations des boxs :', boxError);
+                res.status(500).json({ error: 'Erreur lors de la récupération des informations des boxs' });
+                return;
+            }
+
+            let freeBox = null;
+
+            if (boxResults.length > 0) {
+                const boxsState = boxResults[0];
+                const freeBoxs = [];
+
+                Object.values(boxsState).forEach(value => {
+                    if (value !== null) {
+                        freeBoxs.push(value);
+                    }
+                });
+
+                if (freeBoxs.length > 0) {
+                    freeBox = freeBoxs[Math.floor(Math.random() * freeBoxs.length)];
+                }
+            }
+
+            const response = {
+                ...userResults[0],
+                freeBox: freeBox
+            };
+
+            res.json(response);
+        });
+    });
+});
 
 
 app.post('/utilisateurs', (req, res) => {
@@ -153,7 +226,6 @@ app.post('/utilisateurs', (req, res) => {
         res.status(201).json({ message: 'Utilisateur inséré avec succès', id_utilisateur_inséré: results.insertId });
     });
 });
-
 
 // Route pour supprimer un utilisateur de la base de données en utilisant l'id_utilisateur
 app.delete('/utilisateurs', (req, res) => {
@@ -178,24 +250,29 @@ app.delete('/utilisateurs', (req, res) => {
     });
 });
 
-// Route pour mettre à jour toutes les informations d'un utilisateur en fonction du prénom et du nom
+// Route pour mettre à jour toutes les informations d'un utilisateur en fonction de l'ID
 app.put('/utilisateurs', (req, res) => {
-    const { prenom_utilisateur, nom_utilisateur, ...otherInfo } = req.body;
+    const { id_utilisateur, ...otherInfo } = req.body;
+    console.log(req.body);
+    if (!id_utilisateur) {
+        res.status(400).json({ error: 'ID de l\'utilisateur requis' });
+        return;
+    }
 
-    // Construire la chaîne SQL pour mettre à jour les informations autres que le prénom et le nom de l'utilisateur
+    // Construire la chaîne SQL pour mettre à jour les informations autres que l'ID de l'utilisateur
     let updateQuery = '';
     const updateParams = [];
 
     for (const key in otherInfo) {
         updateQuery += `${key} = ?, `;
-        updateParams.push(req.body[key]);
+        updateParams.push(otherInfo[key]);
     }
     updateQuery = updateQuery.slice(0, -2); // Supprimer la virgule finale
 
     // Mettre à jour les informations de l'utilisateur
-    const query = `UPDATE utilisateur SET ${updateQuery} WHERE prenom_utilisateur = ? AND nom_utilisateur = ?`;
+    const query = `UPDATE utilisateur SET ${updateQuery} WHERE id_utilisateur = ?`;
 
-    connection.query(query, [...updateParams, prenom_utilisateur, nom_utilisateur], (error, results) => {
+    connection.query(query, [...updateParams, id_utilisateur], (error, results) => {
         if (error) {
             console.error('Erreur lors de la mise à jour des informations de l\'utilisateur :', error);
             res.status(500).json({ error: 'Erreur lors de la mise à jour des informations de l\'utilisateur' });
@@ -209,13 +286,6 @@ app.put('/utilisateurs', (req, res) => {
         res.json({ message: 'Informations de l\'utilisateur mises à jour avec succès' });
     });
 });
-
-
-
-
-
-
-
 // Route pour insérer les informations des boxs
 app.post('/info', (req, res) => {
     const { greenEnergy, boxState, date } = req.body;
@@ -255,16 +325,6 @@ app.post('/info', (req, res) => {
     });
 });
 
-//SELECT SUM(CASE WHEN temps_vert_box = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_energie_vert FROM info WHERE box1 = 1 AND info_date BETWEEN NOW() - INTERVAL 1 DAY AND NOW();
-
-
-
-
-
-
-
-// Route pour insérer un utilisateur dans la base de données
-app.use(express.json());
 // Route pour obtenir les pourcentages de temps
 app.get('/utilisateur/pourcentage', (req, res) => {
     const id_utilisateur = req.query.id_utilisateur;
@@ -323,10 +383,51 @@ app.get('/utilisateur/pourcentage', (req, res) => {
     });
 });
 
+// Nouvelle route pour récupérer les boxs libres
+app.get('/boxs-utilisation', (req, res) => {
+    const selectQuery = `
+        SELECT 
+            CASE WHEN box1 = 0 THEN 'box1' END AS box1,
+            CASE WHEN box2 = 0 THEN 'box2' END AS box2,
+            CASE WHEN box3 = 0 THEN 'box3' END AS box3,
+            CASE WHEN box4 = 0 THEN 'box4' END AS box4,
+            CASE WHEN box5 = 0 THEN 'box5' END AS box5,
+            CASE WHEN box6 = 0 THEN 'box6' END AS box6,
+            CASE WHEN box7 = 0 THEN 'box7' END AS box7,
+            CASE WHEN box8 = 0 THEN 'box8' END AS box8
+        FROM info
+        WHERE id_info = (SELECT MAX(id_info) FROM info);
+    `;
 
+    connection.query(selectQuery, (error, results) => {
+        if (error) {
+            console.error('Erreur lors de la récupération des informations des boxs :', error);
+            res.status(500).json({ error: 'Erreur lors de la récupération des informations des boxs' });
+            return;
+        }
 
+        if (results.length > 0) {
+            const boxsState = results[0];
+            const freeBoxs = [];
 
+            Object.values(boxsState).forEach(value => {
+                if (value !== null) {
+                    freeBoxs.push(value);
+                }
+            });
 
+            if (freeBoxs.length > 0) {
+                // Choisir un champ libre au hasard
+                const randomFreeBox = freeBoxs[Math.floor(Math.random() * freeBoxs.length)];
+                res.json({ freeBox: randomFreeBox });
+            } else {
+                res.json({ freeBox: null });
+            }
+        } else {
+            res.json({ freeBox: null });
+        }
+    });
+});
 /*****************************************************************************************************************************/
 /*                                                                                                                           */
 /*****************************************************************************************************************************/
@@ -370,8 +471,6 @@ app.post('/login', (req, res) => {
     );
   });
 
-
-
   app.get('/utilisateurs/quota/:username', (req, res) => {
     const username = req.params.username;
     console.log('Requête de quota reçue pour :', username);
@@ -400,14 +499,6 @@ app.post('/login', (req, res) => {
   
 
 /*****************************************************************************************************************************/
-
-
-
-
-
-
-
-
 
 // Lancement du serveur
 app.listen(port, () => {

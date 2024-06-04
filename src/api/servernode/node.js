@@ -16,7 +16,7 @@ const connection = mysql.createConnection({
     host: '192.168.65.105',
     user: 'debian',
     password: 'root',
-    database: 'sandbox3_projet_bts'
+    database: 'sandbox_projet_bts'
 });
 
 // Connecter à la base de données
