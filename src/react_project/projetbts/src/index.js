@@ -29,7 +29,7 @@ root.render(
         <Route path="/user-profile" element={<UserMain />} />
         <Route path="/time-capital" element={<UserTimeCapital />} />
         <Route path="/consumption" element={<UserConsumption />} />
-        {/* <Route path="*" element={<Error />} /> */}
+        {/* <Route path="*" element={<  Error />} /> */}
       </Routes>
     </Router>
   </React.StrictMode>
