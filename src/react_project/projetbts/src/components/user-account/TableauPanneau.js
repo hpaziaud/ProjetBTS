@@ -63,7 +63,7 @@ const TableauPanneau = () => {
         <label>
           Date et heure de début:
           <input type="datetime-local" value={startDate} onChange={handleStartDateChange} />
-        </label>
+        </label><br></br>
         <label>
           Date et heure de fin:
           <input type="datetime-local" value={endDate} onChange={handleEndDateChange} />

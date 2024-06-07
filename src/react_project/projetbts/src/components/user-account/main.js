@@ -124,13 +124,13 @@ function UserMain() {
                 <div class="split-beer">
                     <img
                         class="beer"
-                        src="https://cdn.futura-sciences.com/sources/images/actu/cellule-solaire-revolutionnaire.jpeg" />
+                        src="https://github.com/HugoTby/ProjetBTS/blob/main/documents/00.jpg?raw=true" />
                     <img
                         class="beer"
-                        src="https://www.lesoir.be/sites/default/files/dpistyles_v2/ls_16_9_864w/2022/03/17/node_430582/28949696/public/2022/03/17/B9730295491Z.1_20220317105244_000+GETK43DV8.1-0.jpg?itok=rlMIdPl-1647511049" />
+                        src="https://github.com/HugoTby/ProjetBTS/blob/main/documents/10.jpg?raw=true" />
                     <img
                         class="beer"
-                        src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/9efc9dd0-9036-419b-bf16-619164b94095" />
+                        src="https://github.com/HugoTby/ProjetBTS/blob/main/documents/20.jpg?raw=true" />
                 </div>
             </section>
 

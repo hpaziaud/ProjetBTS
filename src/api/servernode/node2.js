@@ -113,6 +113,29 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot', (req, res) => {
     });
 });
 */
+// Route pour récupérer le quota utilisateur utilisation avec le badge
+app.get('/utilisateurs/badge_utilisateur/quota-depot/:badge', (req, res) => {
+    const badge_utilisateur = req.params.badge;
+    console.log('Badge utilisateur reçu pour récupérer le quota de dépôt :', badge_utilisateur);
+
+    connection.query('SELECT u.quota_utilisateur FROM utilisateur u WHERE u.badge_utilisateur = ?;', [badge_utilisateur], (error, results) => {
+        if (error) {
+            console.error('Erreur lors de la récupération du quota de dépôt :', error);
+            res.status(500).json({ error: 'Erreur lors de la récupération du quota de dépôt' });
+            return;
+        }
+
+        if (results.length === 0) {
+            console.log('Aucun utilisateur trouvé avec ce badge :', badge_utilisateur);
+            res.status(404).json({ error: 'Aucun utilisateur trouvé avec ce badge' });
+            return;
+        }
+
+        const quotaDepot = results[0].quota_utilisateur;
+        console.log('Quota de dépôt pour l\'utilisateur', badge_utilisateur, ':', quotaDepot);
+        res.json({ quotaDepot });
+    });
+});
 // Route pour récupérer le quota utilisateur et la dernière heure de dépôt d'utilisation avec le badge
 app.get('/utilisateurs/badge_utilisateur/quota-depot-boxslibre/:uid', (req, res) => {
     const badge_utilisateur = req.params.uid;
@@ -134,6 +157,63 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot-boxslibre/:uid', (req, res)
             res.json(results);
         }
     );
+});
+
+// Route pour vérifier si un utilisateur utilise toujours une box avec son badge
+app.get('/occupation/badge_utilisateur/quota-depot/:badge', (req, res) => {
+    const badge_utilisateur = req.params.badge;
+    console.log('Badge utilisateur reçu :', badge_utilisateur);
+
+    const query = `
+        SELECT 1
+        FROM utilisateur u
+        JOIN occupation o ON u.id_utilisateur = o.id_utilisateur_occupation
+        WHERE u.badge_utilisateur = ? AND o.heure_retrait_occupation IS NULL
+        LIMIT 1;
+    `;
+
+    connection.query(query, [badge_utilisateur], (error, results) => {
+        if (error) {
+            console.error('Erreur lors de la récupération des éléments :', error);
+            res.status(500).json({ error: 'Erreur lors de la récupération des éléments' });
+            return;
+        }
+
+        const isInOccupation = results.length > 0 ? 1 : 0;
+        console.log('Utilisateur actuellement en occupation :', isInOccupation);
+        res.json({ isInOccupation });
+    });
+});
+
+// Nouvelle route pour mettre à jour l'heure de retrait
+app.put('/utilisateurs/badge_utilisateur/heure-retrait/:badge', (req, res) => {
+    const badge_utilisateur = req.params.badge;
+    console.log('Badge utilisateur reçu pour mise à jour :', badge_utilisateur);
+
+    const query = `
+        UPDATE occupation o
+        JOIN utilisateur u ON u.id_utilisateur = o.id_utilisateur_occupation
+        SET o.heure_retrait_occupation = NOW()
+        WHERE u.badge_utilisateur = ? AND o.heure_retrait_occupation IS NULL
+        ORDER BY o.heure_depot_occupation DESC
+        LIMIT 1;
+    `;
+
+    connection.query(query, [badge_utilisateur], (error, results) => {
+        if (error) {
+            console.error('Erreur lors de la mise à jour de l\'heure de retrait :', error);
+            res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'heure de retrait' });
+            return;
+        }
+
+        if (results.affectedRows > 0) {
+            console.log('Heure de retrait mise à jour avec succès pour le badge utilisateur :', badge_utilisateur);
+            res.json({ success: true });
+        } else {
+            console.log('Aucune occupation trouvée pour le badge utilisateur :', badge_utilisateur);
+            res.json({ success: false, message: 'Aucune occupation en cours trouvée pour ce badge utilisateur.' });
+        }
+    });
 });
 
 app.get('/utilisateurs/badge_utilisateur/quota-depot-freeboxs/:uid', (req, res) => {
