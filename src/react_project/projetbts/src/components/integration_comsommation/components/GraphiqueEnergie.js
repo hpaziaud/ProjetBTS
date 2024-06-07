@@ -63,7 +63,7 @@ const GraphiqueEnergie = () => {
             datasets: [{
               label: 'Production d’énergie',
               data: donneesEnergie,
-              borderColor: 'rgb(102, 102, 255)',
+              borderColor: 'rgb(75, 192, 192)',
               tension: 0.1
             }]
           },
@@ -73,7 +73,7 @@ const GraphiqueEnergie = () => {
                 beginAtZero: true,
                 ticks: {
                   callback: function(value) {
-                    return value + ' Wh'; // Ajout de l'unité "kWh" sur les ticks de l'axe y
+                    return value + ' kWh'; // Ajout de l'unité "kWh" sur les ticks de l'axe y
                   }
                 }
               }
@@ -82,7 +82,7 @@ const GraphiqueEnergie = () => {
               tooltip: {
                 callbacks: {
                   label: function(tooltipItem) {
-                    return tooltipItem.raw + ' Wh'; // Ajout de l'unité "kWh" dans les infobulles
+                    return tooltipItem.raw + ' kWh'; // Ajout de l'unité "kWh" dans les infobulles
                   }
                 }
               }
@@ -106,11 +106,8 @@ const GraphiqueEnergie = () => {
   }
 
   return (
-    <div style={{
-      overflowY: 'auto',
-      margin: '5%',
-    }}>
-      <h2>Graphique de production d’énergie verte en temps réel</h2>
+    <div>
+      <h2>Graphique de production d’énergie en temps réel</h2>
       <select value={dateSelectionnee} onChange={(e) => setDateSelectionnee(e.target.value)}>
         <option value="">Sélectionner une date</option>
         {datesDisponibles.map(date => (

@@ -281,7 +281,7 @@
   width: 250px;
   border-radius: 20px;
   margin-left: 15px;
-  border: 2px solid orange;
+  border: 2px solid rgb(102, 102, 255);
   object-fit: cover;
 }
 

@@ -58,20 +58,15 @@ const TableauPanneau = () => {
   }
 
   return (
-    <div className="TableauPanneau-container"style={{
-      height: '500px',
-      overflowY: 'auto',
-      margin: '5%',
-      borderRadius: '15px',
-    }}>
-      <h2>Suivi de production d'énergie verte</h2>
+    <div className="TableauPanneau-container">
+      <h2>Suivi de production d'énergie par les panneaux</h2>
       <div className="TableauPanneau-filters">
         <label>
-          Date et heure de début : &nbsp;
+          Date et heure de début:
           <input type="datetime-local" value={startDate} onChange={handleStartDateChange} />
-        </label><br></br>
+        </label>
         <label>
-          Date et heure de fin : &nbsp;
+          Date et heure de fin:
           <input type="datetime-local" value={endDate} onChange={handleEndDateChange} />
         </label>
       </div>
@@ -80,18 +75,18 @@ const TableauPanneau = () => {
           <tr>
             <th>Date</th>
             <th>Heure</th>
-            <th>Production d'énergie (Wh)</th>
+            <th>Production d'énergie (kWh)</th>
           </tr>
         </thead>
         <tbody>
-        {filteredData.reverse().map((item, index) => ( // Utiliser reverse() ici
-          <tr key={index}>
-            <td>{new Date(item.date).toLocaleDateString()}</td>
-            <td>{new Date(item.date).toLocaleTimeString()}</td>
-            <td>{item.production_energie.toFixed(2)}</td>
-          </tr>
-        ))}
-      </tbody>
+          {filteredData.map((item, index) => (
+            <tr key={index}>
+              <td>{new Date(item.date).toLocaleDateString()}</td>
+              <td>{new Date(item.date).toLocaleTimeString()}</td>
+              <td>{item.production_energie.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );
