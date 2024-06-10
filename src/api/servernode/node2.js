@@ -4,6 +4,14 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 5001;
+
+
+// Liste des adresses IP autorisées
+//const allowedIps = ['192.168.64.88', '192.168.65.105', '192.168.67.67'];
+
+
+
+
 // Route pour insérer un utilisateur dans la base de données
 app.use(express.json());
 
@@ -163,7 +171,7 @@ app.get('/occupation/badge_utilisateur/quota-depot/:badge', (req, res) => {
 
         const isInOccupation = results.length > 0 ? 1 : 0;
         console.log('Utilisateur actuellement en occupation :', isInOccupation);
-        res.json({ isInOccupation });
+        res.json({ isInOccupation, badge_utilisateur });
     });
 });
 
@@ -197,7 +205,7 @@ app.put('/utilisateurs/badge_utilisateur/heure-retrait/:badge', (req, res) => {
         }
     });
 });
-
+// route pour recupere le quota temps - heur depot - et une boxs a laide de lid badge
 app.get('/utilisateurs/badge_utilisateur/quota-depot-freeboxs/:uid', (req, res) => {
     const badge_utilisateur = req.params.uid;
     console.log('Badge utilisateur reçu :', badge_utilisateur);
@@ -274,7 +282,7 @@ app.get('/utilisateurs/badge_utilisateur/quota-depot-freeboxs/:uid', (req, res) 
     });
 });
 
-
+//route pour insere un utilisateur
 app.post('/utilisateurs', (req, res) => {
     console.log(req.body);
     const { nom_utilisateur, prenom_utilisateur, classe_utilisateur, badge_utilisateur, password_utilisateur, telephone_utilisateur, mail_utilisateur, quota_utilisateur } = req.body;
