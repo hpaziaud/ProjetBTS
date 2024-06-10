@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 5001;
 
-
+//securiter
 // Liste des adresses IP autorisées
 //const allowedIps = ['192.168.64.88', '192.168.65.105', '192.168.67.67'];
 
